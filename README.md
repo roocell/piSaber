@@ -1,3 +1,3 @@
 
 # piSaber
-# A Raspberry Pi controlled lightsaber using neopixels
+## A Raspberry Pi controlled lightsaber using neopixels
