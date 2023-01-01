@@ -35,6 +35,19 @@ git config --global user.name ""
 git config --global user.email ""
 <commit a change and push it, fill in email/token>
 git config --global credential.helper cache
+    
+sudo apt-get install samba samba-common-bin
+sudo vi /etc/samba/smb.conf
+[pi]
+path = /home/pi/
+writeable=Yes
+create mask=0777
+directory mask=0777
+public=no
+mangled names = no
+sudo smbpasswd -a pi
+sudo systemctl restart smbd
+
 ```
 
 # install (for neopixels)
