@@ -16,3 +16,10 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install python3-pip
 sudo apt-get install git
+
+https://github.com/settings/tokens
+git config --global user.name ""
+git config --global user.email ""
+git config -l
+git pull
+git config --global credential.helper cache
