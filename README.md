@@ -11,3 +11,8 @@ https://www.instructables.com/Arduino-Based-Lightsaber-With-Light-and-Sound-Effe
     https://github.com/AlexGyver/EnglishProjects/tree/master/GyverSaber
 PM8403/raspi demo https://www.youtube.com/watch?v=6YBBcBQpCiA
 
+# install (from buster)
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install python3-pip
+sudo apt-get install git
