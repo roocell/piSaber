@@ -15,11 +15,10 @@ PM8403/raspi demo https://www.youtube.com/watch?v=6YBBcBQpCiA
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install python3-pip
-sudo apt-get install git
 
+sudo apt-get install git
 https://github.com/settings/tokens
 git config --global user.name ""
 git config --global user.email ""
-git config -l
-git pull
+<commit a change and push it, fill in email/token>
 git config --global credential.helper cache
