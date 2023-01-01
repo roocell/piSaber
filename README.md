@@ -59,5 +59,8 @@ sudo python3 -m pip install --force-reinstall adafruit-blinka
 ```
 
 # install (for mpu6050)
-
+https://www.electronicwings.com/raspberry-pi/raspberry-pi-i2c<BR>
+Have to configure I2C on raspi using raspi-config<BR>
+pip install asyncio
+pip install smbus
 
