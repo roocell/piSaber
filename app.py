@@ -32,7 +32,9 @@ class app_data:
         self.mainloopcnt = 0
         self.debug_button = 26 # GPIO26
         self.external_button = 1 # GPIO1
-        self.pressed_time = 0
+        self.last_button_value = False # True = pressed
+        self.button_timer_1sec = False
+        self.button_timer_3sec = False
 appd = app_data()
 
 ###########################################
@@ -46,18 +48,10 @@ def sig_handler(signum, frame):
 signal.signal(signal.SIGINT, sig_handler)
 
 ### BUTTON #############################
-async def button_event_async(pin):
-    # https://www.joeltok.com/blog/2020-10/python-asyncio-create-task-fails-silently
-    # any syntax error inside our coroutine will fail silently.
-    # we have to explicitly raise any exceptions here
-    try:
-        if appd.blade.get_state() == blade.BLADE_OFF:
-            await appd.blade.animate(blade.BLADE_ON)
-        else:
-            await appd.blade.animate(blade.BLADE_OFF)
-    except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
+async def debug_button_event_async(pin):
+    log.debug("debug button in asyncio")
 
-def button_event(pin):
+def debug_button_event(pin):
     # GPIO event is not on mainthread so we have to store the main event loop in appd
     # and then use it here
     # pulled down in HW
@@ -67,45 +61,73 @@ def button_event(pin):
     if buttonReleased:
         t = "released"
     else:
-        t = "pushed"
+        t = "pressed"
     log.debug("Button {} was {}".format(pin, t))
-    if buttonReleased == False:
-        asyncio.run_coroutine_threadsafe(button_event_async(pin), appd.loop)
+    # https://www.joeltok.com/blog/2020-10/python-asyncio-create-task-fails-silently
+    # any syntax error inside our coroutine will fail silently.
+    # we have to explicitly raise any exceptions here
+    # call run_coroutine_threadsafe when going from non-async to async
+    #asyncio.run_coroutine_threadsafe(debug_button_event_async(appd.debug_button), appd.loop)
 
-def external_button_event(pin):
-    button_event(pin)
-def debug_button_event(pin):
-    button_event(pin)
-
+def external_button_is_pressed():
+    return GPIO.input(appd.external_button)
+        
 ############### MOTION ###########
 async def motion_detected():
     log.debug("motion_detected")
-    await appd.blade.animate(blade.BLADE_CRASH)
+    if appd.blade.get_state() == blade.BLADE_ON:
+        await appd.blade.animate(blade.BLADE_CRASH)
 
 ######################## MAIN ##########################
-async def mainloop_timer(repeat, timeout):
-    # mostly for debugging things
-    #log.debug("mainloop")
-    
-    # appd.mainloopcnt += 1
-    # if appd.mainloopcnt % 5 == 0:
-    #     button_event(appd.button)
-
-    but_val = GPIO.input(appd.external_button)
-    print(GPIO.input(appd.external_button))
-    if but_val == True:
-        appd.pressed_time += 1
-    else:
-        appd.pressed_time = 0
-    
-    if appd.pressed_time == 3:
-        if appd.blade.get_state() != blade.BLADE_ON:
+async def button_3sec_timer_callback(repeat, timeout):
+    print("long press")
+    try:
+        if appd.blade.get_state() == blade.BLADE_OFF:
             await appd.blade.animate(blade.BLADE_ON)
         else:
             await appd.blade.animate(blade.BLADE_OFF)
+    except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
+async def button_1sec_timer_callback(repeat, timeout):
+    try:
+        # if the button is still pressed, then do nothing
+        # the user may be going for a longer press
+        if external_button_is_pressed():
+            return
+        # short press - cycle through idle modes
+        print("short press")
+        if appd.button_timer_3sec:
+            appd.button_timer_3sec.cancel()
+        if appd.blade.get_state() == blade.BLADE_OFF:
+            return
+        await appd.blade.idle_cyclefunc()
+    except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
-    timer.Timer(1, mainloop_timer, False)
+async def mainloop_timer(repeat, timeout):
+    try: 
+        # mostly for debugging things
+        #log.debug("mainloop")
+        
+        # appd.mainloopcnt += 1
+        # if appd.mainloopcnt % 5 == 0:
+        #     button_event(appd.button)
+
+        # check_for_cycle = False
+        button_val = GPIO.input(appd.external_button)
+        #print(button_val)
+
+        if button_val == True and appd.last_button_value == False:
+            # falling edge (pressed)
+            print("button pressed")
+            appd.button_timer_1sec = timer.Timer(1.0, button_1sec_timer_callback, False)
+            appd.button_timer_3sec = timer.Timer(3.0, button_3sec_timer_callback, False)
+        elif button_val == False and appd.last_button_value == True:
+            # rising edge (released)
+            print("button released")
+        appd.last_button_value = button_val
+
+        timer.Timer(0.1, mainloop_timer, False)
+    except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
 
 if __name__ == '__main__':
     log.debug("Summoning the force...")
@@ -127,7 +149,7 @@ if __name__ == '__main__':
     GPIO.setup(appd.external_button, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     # for some reason event triggers aren't working properly with this button
     # will resort to main loop
-    #GPIO.add_event_detect(appd.external_button, GPIO.RISING, callback=external_button_event, bouncetime=200)
+    #GPIO.add_event_detect(appd.external_button, GPIO.RISING, callback=external_button_event, bouncetime=1000)
 
     timer.Timer(1, mainloop_timer, True)
 

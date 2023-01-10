@@ -27,8 +27,8 @@ class Motion:
         mpu.MPU_Init()
         timer.Timer(self.mpu_time, self.mpu_timer, True)
 
-    def rim_moved(self, current, last, change_per):
-        log.debug("rim_moved time %.1f current %d last %d change_per %2.1f",
+    def moved(self, current, last, change_per):
+        log.debug("moved time %.1f current %d last %d change_per %2.1f",
             time.monotonic(),
             current, last, change_per)
 
@@ -79,7 +79,8 @@ class Motion:
         movement_detected = False
         if motion > (self.motion * self.motion_limit / 100):
             movement_detected = True
-            self.rim_moved(motion, self.motion, (motion * 100 / self.motion))
+            self.moved(motion, self.motion, (motion * 100 / self.motion))
+            await self.motion_detected()
 
         print = False
         if print_motion_data == True or movement_detected:

@@ -116,6 +116,13 @@ class Blade:
         self.state = BLADE_OFF
         self.onoffdelay = 0.01
 
+        self.idlefunc = [
+            self.idle_pulse,
+            self.idle_breath,
+            self.idle_rainbow_cycle,
+        ]
+        self.idlefunc_idx = 0
+
         #self.pixels.fill((155, 155, 155))
         #self.pixels.show()
 
@@ -228,15 +235,26 @@ class Blade:
                 await asyncio.sleep(0.01)
                 # shift flame values
 
-        except Exception as e: log.error(">>>>ib Error>>>> {} ".format(e))
+        except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
 
     async def idle_flame(self):
         try:
             await NeoFire_Draw(self.pixels)
-        except Exception as e: log.error(">>>>ib Error>>>> {} ".format(e))
+        except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
+
+    async def idle_cyclefunc(self):
+        try:
+            if self.task:
+                self.task.cancel()
+            self.idlefunc_idx += 1
+            if self.idlefunc_idx >= len(self.idlefunc):
+                self.idlefunc_idx = 0
+            print("running cycle idx", self.idlefunc_idx)
+            self.task = asyncio.create_task(self.idle())
+        except Exception as e: log.error(">>>>idle_cyclefunc Error>>>> {} ".format(e))
 
     async def idle(self):
-        await self.idle_rainbow_cycle()
+        await self.idlefunc[self.idlefunc_idx]()
 
     async def shutdown(self):
         log.debug("blade shutdown")
