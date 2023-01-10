@@ -1,7 +1,6 @@
 
 # piSaber
 ## A Raspberry Pi controlled lightsaber using neopixels
-##
 
 
 # Resources
@@ -13,6 +12,36 @@ https://www.instructables.com/Arduino-Based-Lightsaber-With-Light-and-Sound-Effe
 PM8403/raspi demo https://www.youtube.com/watch?v=6YBBcBQpCiA<BR>
 
 # hardware
+machine screws #10-32 x 3.8"
+5/32 drill bit
+pizero
+1000uF capacitor
+220Ohm, 330Ohm, resistor
+MPU6050
+SN74AHCT125N
+pushbutton
+USB connector
+neopixel strip
+5pin connectors
+gorilla superglue
+duct tape
+Hillan Plastic Hole Plugs
+https://www.lowes.ca/product/hole-plugs/hillman-plastic-hole-plugs-2-pack-139486
+12" X 1.5" Plastic Slip Joint extension tube
+https://www.lowes.ca/product/under-sink-plumbing/plumb-pak-1-12-in-plastic-slip-joint-extension-tube-15698
+1.5" Brass SLip Joint Nut
+https://www.lowes.ca/product/under-sink-plumbing/1-12-in-dia-brass-slip-joint-nut-191399
+Xirtic PVC 1" x 1.5" Nipple
+https://www.lowes.ca/product/pvc-fittings/xirtec-pvc-1-inx1-12-in-pvc-sch-80-nipple-mpt-2887385
+EnergyQC 5000mAh cylindrincal power supply
+https://www.amazon.ca/dp/B0B11R3QHY?ref=ppx_yo2ov_dt_b_product_details&th=1
+PAM8403
+https://www.amazon.ca/dp/B00LODGV64?psc=1&ref=ppx_yo2ov_dt_b_product_details
+1.5" 4 ohm 3W speakers
+https://www.amazon.ca/dp/B01LYHFS1P?psc=1&ref=ppx_yo2ov_dt_b_product_details
+
+
+
 ### Neopixels
 Since neopixels are 5V and raspi GPIO is 3.3V we need a 3.3V->5V signal converter (SN74AHCT125N)<BR>
 Connect a 1000uF capacitor across 5V/GND to limit any spike in current draw by the neopixels.<BR>
@@ -39,6 +68,8 @@ https://www.homedepot.ca/product/sharkbite-1-inch-x-10-feet-white-pex-pipe/10010
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install python3-pip
+
+sudo ln -fs /usr/bin/python3 /usr/bin/python
 
 sudo apt-get install git
 https://github.com/settings/tokens
@@ -72,6 +103,25 @@ sudo python3 -m pip install --force-reinstall adafruit-blinka
 # install (for mpu6050)
 https://www.electronicwings.com/raspberry-pi/raspberry-pi-i2c<BR>
 Have to configure I2C on raspi using raspi-config<BR>
-pip install asyncio
-pip install smbus
+sudo pip3 install asyncio<BR>
+sudo pip3 install smbus<BR>
 
+# START AS SERVICE
+sudo vi /etc/systemd/system/pisaber.service
+[Unit]
+Description=pisaber
+After=network-online.target
+[Service]
+ExecStart=/home/pi/piSaber/app.py
+[Install]
+WantedBy=multi-user.target
+
+add shebang to app.py (#!/usr/bin/python3)
+chmod +x ~/piSaber/app.py
+
+sudo systemctl daemon-reload
+sudo systemctl enable pisaber
+sudo systemctl restart pisaber
+sudo systemctl status pisaber.service
+
+sudo systemctl disable pisaber

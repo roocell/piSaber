@@ -30,7 +30,9 @@ class app_data:
         self.pixel_pin = board.D12
         self.audiopath = "/home/roocell/p/audio/"
         self.mainloopcnt = 0
-        self.button = 26 # GPIO26
+        self.debug_button = 26 # GPIO26
+        self.external_button = 1 # GPIO1
+        self.pressed_time = 0
 appd = app_data()
 
 ###########################################
@@ -70,10 +72,15 @@ def button_event(pin):
     if buttonReleased == False:
         asyncio.run_coroutine_threadsafe(button_event_async(pin), appd.loop)
 
-############### MOTION ###########
-async def motion_detected(repeat, timeout):
-    log.debug("motion_detected")
+def external_button_event(pin):
+    button_event(pin)
+def debug_button_event(pin):
+    button_event(pin)
 
+############### MOTION ###########
+async def motion_detected():
+    log.debug("motion_detected")
+    await appd.blade.animate(blade.BLADE_CRASH)
 
 ######################## MAIN ##########################
 async def mainloop_timer(repeat, timeout):
@@ -83,6 +90,20 @@ async def mainloop_timer(repeat, timeout):
     # appd.mainloopcnt += 1
     # if appd.mainloopcnt % 5 == 0:
     #     button_event(appd.button)
+
+    but_val = GPIO.input(appd.external_button)
+    print(GPIO.input(appd.external_button))
+    if but_val == True:
+        appd.pressed_time += 1
+    else:
+        appd.pressed_time = 0
+    
+    if appd.pressed_time == 3:
+        if appd.blade.get_state() != blade.BLADE_ON:
+            await appd.blade.animate(blade.BLADE_ON)
+        else:
+            await appd.blade.animate(blade.BLADE_OFF)
+
 
     timer.Timer(1, mainloop_timer, False)
 
@@ -96,10 +117,17 @@ if __name__ == '__main__':
     pixels.fill((0, 0, 0)) # start off
     pixels.show()
 
-    # set up our button.
-    GPIO.setwarnings(True) # Ignore warning for now
-    GPIO.setup(appd.button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(appd.button, GPIO.BOTH, callback=button_event, bouncetime=100)
+    # set up our internal/debug button.
+    GPIO.setwarnings(True)
+    GPIO.setup(appd.debug_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(appd.debug_button, GPIO.BOTH, callback=debug_button_event, bouncetime=100)
+
+    # set up our external button.
+    GPIO.setwarnings(True)
+    GPIO.setup(appd.external_button, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    # for some reason event triggers aren't working properly with this button
+    # will resort to main loop
+    #GPIO.add_event_detect(appd.external_button, GPIO.RISING, callback=external_button_event, bouncetime=200)
 
     timer.Timer(1, mainloop_timer, True)
 
@@ -110,7 +138,7 @@ if __name__ == '__main__':
         log.error(">>>>Motion Module Error>>>> {} ".format(e))
         #appd.audio.play_sound(audio.buzzer)
 
-    appd.blade = blade.Blade(pixels, blue)
+    appd.blade = blade.Blade(pixels,blue)
 
     # run the event loop
     appd.loop = asyncio.get_event_loop()
