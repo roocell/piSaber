@@ -72,6 +72,11 @@ then play a file
 ```
 aplay ~/piSaver/sounds/SK1.wav
 ```
+We only have one speaker so just need to PWM pin and then connected through one channel of the amplier.<BR>
+If using PWM as audio, it can't be used for anything else (along with some other pins too like GPIO18)<BR>
+Very terrible sound if directly connected to PWM.<BR>
+So we have to put a filter in front of the amp.<BR>
+<img src="audio_filter.jpg"><BR>
 
 
 # sourcing blade
@@ -123,14 +128,14 @@ sudo python3 -m pip install --force-reinstall adafruit-blinka
 NeoPixels must be connected to GPIO10, GPIO12, GPIO18 or GPIO21 to work! GPIO18 is the standard pin.
 Sound must be disabled to use GPIO18. We're using GPIO12 for sound - so that leaves us GPIO10/21
 
+
 # install (for mpu6050)
 https://www.electronicwings.com/raspberry-pi/raspberry-pi-i2c<BR>
 Have to configure I2C on raspi using raspi-config<BR>
 sudo pip3 install asyncio<BR>
 sudo pip3 install smbus<BR>
 
-# install (for power amplifier)
-pip3 install audiopwmio
+# install (for audio / power amplifier)
 
 
 # START AS SERVICE
