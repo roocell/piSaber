@@ -9,7 +9,12 @@ https://www.thecustomsabershop.com/Pixel-Blades-C153.aspx<BR>
 https://www.thecustomsabershop.com/1-Thick-walled-Trans-White-PolyC-40-long-P528.aspx<BR>
 https://www.instructables.com/Arduino-Based-Lightsaber-With-Light-and-Sound-Effe/<BR>
     https://github.com/AlexGyver/EnglishProjects/tree/master/GyverSaber<BR>
+<BR>
+https://www.instructables.com/PAM8403-6W-STEREO-AMPLIFIER-TUTORIAL/<BR>
+https://othermod.com/raspberry-pi-zero-audio-circuit/<BR>
 PM8403/raspi demo https://www.youtube.com/watch?v=6YBBcBQpCiA<BR>
+https://learn.adafruit.com/adding-basic-audio-ouput-to-raspberry-pi-zero/pi-zero-pwm-audio<BR>
+https://docs.circuitpython.org/en/latest/shared-bindings/audiopwmio/index.html<BR>
 
 # hardware
 machine screws #10-32 x 3.8"
@@ -48,9 +53,25 @@ Connect a 1000uF capacitor across 5V/GND to limit any spike in current draw by t
 A 330ohm resistor on the signal line to the neopixels.<BR>
 NOTE: if you're powering the raspi and neopixels separately, be sure to connect the grounds together, otherwise the signal line gets corrupted.<BR>
 
-### Moton sensor (MPU6050)
+### Motion sensor (MPU6050)
 https://learn.adafruit.com/mpu6050-6-dof-accelerometer-and-gyro/pinouts<BR>
 
+### Power Amplifier
+Can create a headphone jack using PWM by using DT overlays and editing /boot/config.txt
+```
+dtoverlay=pwm-2chan,pin=18,func=2,pin2=13,func2=4
+dtoverlay=audremap,enable_jack=on
+```
+
+then you can list the device 
+```
+aplay -l
+```
+turn down audio using alsamixer
+then play a file 
+```
+aplay ~/piSaver/sounds/SK1.wav
+```
 
 
 # sourcing blade
@@ -99,12 +120,18 @@ https://learn.adafruit.com/neopixels-on-raspberry-pi/python-usage<BR>
 sudo pip3 install rpi_ws281x adafruit-circuitpython-neopixel
 sudo python3 -m pip install --force-reinstall adafruit-blinka
 ```
+NeoPixels must be connected to GPIO10, GPIO12, GPIO18 or GPIO21 to work! GPIO18 is the standard pin.
+Sound must be disabled to use GPIO18. We're using GPIO12 for sound - so that leaves us GPIO10/21
 
 # install (for mpu6050)
 https://www.electronicwings.com/raspberry-pi/raspberry-pi-i2c<BR>
 Have to configure I2C on raspi using raspi-config<BR>
 sudo pip3 install asyncio<BR>
 sudo pip3 install smbus<BR>
+
+# install (for power amplifier)
+pip3 install audiopwmio
+
 
 # START AS SERVICE
 sudo vi /etc/systemd/system/pisaber.service

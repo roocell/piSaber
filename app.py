@@ -27,14 +27,15 @@ violet =    (155,38,182)
 class app_data:
     def __init__(self):
         self.num_pixels = 61
-        self.pixel_pin = board.D12
+        # can't using GPIO12 (which is our PWM sound) or GPIO18 (which requires sound off to work)
+        self.pixel_pin = board.D21
         self.audiopath = "/home/roocell/p/audio/"
         self.mainloopcnt = 0
         self.debug_button = 26 # GPIO26
         self.external_button = 1 # GPIO1
         self.last_button_value = False # True = pressed
-        self.button_timer_1sec = False
-        self.button_timer_3sec = False
+        self.button_timer_short = False
+        self.button_timer_long = False
 appd = app_data()
 
 ###########################################
@@ -79,7 +80,7 @@ async def motion_detected():
         await appd.blade.animate(blade.BLADE_CRASH)
 
 ######################## MAIN ##########################
-async def button_3sec_timer_callback(repeat, timeout):
+async def button_long_timer_callback(repeat, timeout):
     print("long press")
     try:
         if appd.blade.get_state() == blade.BLADE_OFF:
@@ -88,7 +89,7 @@ async def button_3sec_timer_callback(repeat, timeout):
             await appd.blade.animate(blade.BLADE_OFF)
     except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
-async def button_1sec_timer_callback(repeat, timeout):
+async def button_short_timer_callback(repeat, timeout):
     try:
         # if the button is still pressed, then do nothing
         # the user may be going for a longer press
@@ -96,8 +97,9 @@ async def button_1sec_timer_callback(repeat, timeout):
             return
         # short press - cycle through idle modes
         print("short press")
-        if appd.button_timer_3sec:
-            appd.button_timer_3sec.cancel()
+        if appd.button_timer_long:
+            appd.button_timer_long.cancel()
+        # don't do this if the blade is off
         if appd.blade.get_state() == blade.BLADE_OFF:
             return
         await appd.blade.idle_cyclefunc()
@@ -119,8 +121,8 @@ async def mainloop_timer(repeat, timeout):
         if button_val == True and appd.last_button_value == False:
             # falling edge (pressed)
             print("button pressed")
-            appd.button_timer_1sec = timer.Timer(1.0, button_1sec_timer_callback, False)
-            appd.button_timer_3sec = timer.Timer(3.0, button_3sec_timer_callback, False)
+            appd.button_timer_short = timer.Timer(0.5, button_short_timer_callback, False)
+            appd.button_timer_long = timer.Timer(2.0, button_long_timer_callback, False)
         elif button_val == False and appd.last_button_value == True:
             # rising edge (released)
             print("button released")
