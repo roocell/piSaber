@@ -2,7 +2,6 @@
 # piSaber
 ## A Raspberry Pi controlled lightsaber using neopixels
 
-
 # Resources
 https://fredrik.hubbe.net/lightsaber/v4/<BR>
 https://www.thecustomsabershop.com/Pixel-Blades-C153.aspx<BR>
