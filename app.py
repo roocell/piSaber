@@ -10,6 +10,7 @@ from logger import log as log
 import signal
 import motion
 import blade
+import audio
 
 ### DEFINES ############################
 green =     (0,   255, 0)
@@ -84,8 +85,10 @@ async def button_long_timer_callback(repeat, timeout):
     print("long press")
     try:
         if appd.blade.get_state() == blade.BLADE_OFF:
+            await appd.audio.play_on()
             await appd.blade.animate(blade.BLADE_ON)
         else:
+            await appd.audio.play_off()
             await appd.blade.animate(blade.BLADE_OFF)
     except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
@@ -163,6 +166,7 @@ if __name__ == '__main__':
         #appd.audio.play_sound(audio.buzzer)
 
     appd.blade = blade.Blade(pixels,blue)
+    appd.audio = audio.Audio()
 
     # run the event loop
     appd.loop = asyncio.get_event_loop()

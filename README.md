@@ -56,7 +56,7 @@ NOTE: if you're powering the raspi and neopixels separately, be sure to connect 
 ### Motion sensor (MPU6050)
 https://learn.adafruit.com/mpu6050-6-dof-accelerometer-and-gyro/pinouts<BR>
 
-### Power Amplifier
+### Sound + Power Amplifier
 Can create a headphone jack using PWM by using DT overlays and editing /boot/config.txt
 ```
 dtoverlay=pwm-2chan,pin=18,func=2,pin2=13,func2=4
@@ -70,7 +70,7 @@ aplay -l
 turn down audio using alsamixer
 then play a file 
 ```
-aplay ~/piSaver/sounds/SK1.wav
+aplay ~/piSaber/sounds/SK1.wav
 ```
 We only have one speaker so just need to PWM pin and then connected through one channel of the amplier.<BR>
 If using PWM as audio, it can't be used for anything else (along with some other pins too like GPIO18)<BR>
@@ -78,6 +78,11 @@ Very terrible sound if directly connected to PWM.<BR>
 So we have to put a filter in front of the amp.<BR>
 <img src="audio_filter.jpg"><BR>
 
+```
+sudo pip3 install pygame
+sudo pip3 install pyalsaaudio
+sudo apt-get install libsdl2-mixer-2.0-0
+```
 
 # sourcing blade
 https://plasticworld.ca/product/acrylic-round-tube/ - $11 CAD clear acrylic - 6ft
