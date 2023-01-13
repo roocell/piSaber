@@ -34,7 +34,7 @@ class app_data:
         self.mainloopcnt = 0
         self.debug_button = 26 # GPIO26
         self.external_button = 1 # GPIO1
-        self.last_button_value = False # True = pressed
+        self.last_button_value = True # False = pressed
         self.button_timer_short = False
         self.button_timer_long = False
 appd = app_data()
@@ -71,8 +71,16 @@ def debug_button_event(pin):
     # call run_coroutine_threadsafe when going from non-async to async
     #asyncio.run_coroutine_threadsafe(debug_button_event_async(appd.debug_button), appd.loop)
 
+def external_button_event(pin):
+    buttonReleased = GPIO.input(pin)
+    if buttonReleased:
+        t = "released"
+    else:
+        t = "pressed"
+    log.debug("ext Button {} was {}".format(pin, t))
+
 def external_button_is_pressed():
-    return GPIO.input(appd.external_button)
+    return GPIO.input(appd.external_button) == False
         
 ############### MOTION ###########
 async def motion_detected():
@@ -121,12 +129,12 @@ async def mainloop_timer(repeat, timeout):
         button_val = GPIO.input(appd.external_button)
         #print(button_val)
 
-        if button_val == True and appd.last_button_value == False:
+        if button_val == False and appd.last_button_value == True:
             # falling edge (pressed)
             print("button pressed")
             appd.button_timer_short = timer.Timer(0.5, button_short_timer_callback, False)
             appd.button_timer_long = timer.Timer(2.0, button_long_timer_callback, False)
-        elif button_val == False and appd.last_button_value == True:
+        elif button_val == True and appd.last_button_value == False:
             # rising edge (released)
             print("button released")
         appd.last_button_value = button_val
@@ -151,10 +159,8 @@ if __name__ == '__main__':
 
     # set up our external button.
     GPIO.setwarnings(True)
-    GPIO.setup(appd.external_button, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    # for some reason event triggers aren't working properly with this button
-    # will resort to main loop
-    #GPIO.add_event_detect(appd.external_button, GPIO.RISING, callback=external_button_event, bouncetime=1000)
+    GPIO.setup(appd.external_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(appd.external_button, GPIO.BOTH, callback=external_button_event, bouncetime=100)
 
     timer.Timer(1, mainloop_timer, True)
 

@@ -16,33 +16,34 @@ https://learn.adafruit.com/adding-basic-audio-ouput-to-raspberry-pi-zero/pi-zero
 https://docs.circuitpython.org/en/latest/shared-bindings/audiopwmio/index.html<BR>
 
 # hardware
-machine screws #10-32 x 3.8"
-5/32 drill bit
-pizero
-1000uF capacitor
-220Ohm, 330Ohm, resistor
-MPU6050
-SN74AHCT125N
-pushbutton
-USB connector
-neopixel strip
-5pin connectors
-gorilla superglue
-duct tape
-Hillan Plastic Hole Plugs
-https://www.lowes.ca/product/hole-plugs/hillman-plastic-hole-plugs-2-pack-139486
-12" X 1.5" Plastic Slip Joint extension tube
-https://www.lowes.ca/product/under-sink-plumbing/plumb-pak-1-12-in-plastic-slip-joint-extension-tube-15698
-1.5" Brass SLip Joint Nut
-https://www.lowes.ca/product/under-sink-plumbing/1-12-in-dia-brass-slip-joint-nut-191399
-Xirtic PVC 1" x 1.5" Nipple
-https://www.lowes.ca/product/pvc-fittings/xirtec-pvc-1-inx1-12-in-pvc-sch-80-nipple-mpt-2887385
-EnergyQC 5000mAh cylindrincal power supply
-https://www.amazon.ca/dp/B0B11R3QHY?ref=ppx_yo2ov_dt_b_product_details&th=1
-PAM8403
-https://www.amazon.ca/dp/B00LODGV64?psc=1&ref=ppx_yo2ov_dt_b_product_details
-1.5" 4 ohm 3W speakers
-https://www.amazon.ca/dp/B01LYHFS1P?psc=1&ref=ppx_yo2ov_dt_b_product_details
+machine screws #10-32 x 3.8"<BR>
+5/64 drill bit (connecting port to hat board)<BR>
+3/32 drill bit (pizero board hole size)<BR>
+pizero<BR>
+1000uF capacitor<BR>
+220Ohm, 330Ohm, resistor<BR>
+MPU6050<BR>
+SN74AHCT125N<BR>
+pushbutton<BR>
+USB connector<BR>
+neopixel strip<BR>
+5pin connectors<BR>
+gorilla superglue<BR>
+duct tape<BR>
+Hillan Plastic Hole Plugs<BR>
+https://www.lowes.ca/product/hole-plugs/hillman-plastic-hole-plugs-2-pack-139486<BR>
+12" X 1.5" Plastic Slip Joint extension tube<BR>
+https://www.lowes.ca/product/under-sink-plumbing/plumb-pak-1-12-in-plastic-slip-joint-extension-tube-15698<BR>
+1.5" Brass SLip Joint Nut<BR>
+https://www.lowes.ca/product/under-sink-plumbing/1-12-in-dia-brass-slip-joint-nut-191399<BR>
+Xirtic PVC 1" x 1.5" Nipple<BR>
+https://www.lowes.ca/product/pvc-fittings/xirtec-pvc-1-inx1-12-in-pvc-sch-80-nipple-mpt-2887385<BR>
+EnergyQC 5000mAh cylindrincal power supply<BR>
+https://www.amazon.ca/dp/B0B11R3QHY?ref=ppx_yo2ov_dt_b_product_details&th=1<BR>
+PAM8403<BR>
+https://www.amazon.ca/dp/B00LODGV64?psc=1&ref=ppx_yo2ov_dt_b_product_details<BR>
+1.5" 4 ohm 3W speakers<BR>
+https://www.amazon.ca/dp/B01LYHFS1P?psc=1&ref=ppx_yo2ov_dt_b_product_details<BR>
 
 
 
