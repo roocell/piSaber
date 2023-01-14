@@ -15,7 +15,7 @@ sounds["off"] = "OFF.wav"
 path = "/home/pi/piSaber/sounds/"
 on = path + "ON.wav"
 off = path + "OFF.wav"
-
+there_is_no_try = path + "there-is-no-try.wav"
 
 class Audio:
     def __init__(self):
@@ -34,6 +34,9 @@ class Audio:
         pygame.mixer.Sound(on).play()
     async def play_off(self):
         pygame.mixer.Sound(off).play()
+
+    async def play_startup(self):
+        pygame.mixer.Sound(there_is_no_try).play()
 
 if __name__ == '__main__':
     pygame.mixer.init()

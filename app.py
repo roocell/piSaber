@@ -116,6 +116,22 @@ async def button_short_timer_callback(repeat, timeout):
         await appd.blade.idle_cyclefunc()
     except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
+async def startup_animation(repeat, timeout):
+        await appd.audio.play_startup()
+        pixels[5] = white
+        pixels.show()
+        time.sleep(0.5)
+        pixels[5] = black
+        pixels[25] = white
+        pixels.show()
+        time.sleep(0.5)
+        pixels[25] = black
+        pixels[45] = white
+        pixels.show()
+        time.sleep(0.5)
+        pixels.fill((0, 0, 0)) # start off
+        pixels.show()
+
 async def mainloop_timer(repeat, timeout):
     try: 
         # mostly for debugging things
@@ -149,8 +165,6 @@ if __name__ == '__main__':
     pixels = neopixel.NeoPixel(
         appd.pixel_pin, appd.num_pixels, brightness=1.0, auto_write=False, pixel_order=ORDER
     )
-    pixels.fill((0, 0, 0)) # start off
-    pixels.show()
 
     # set up our internal/debug button.
     GPIO.setwarnings(True)
@@ -163,6 +177,7 @@ if __name__ == '__main__':
     GPIO.add_event_detect(appd.external_button, GPIO.BOTH, callback=external_button_event, bouncetime=100)
 
     timer.Timer(1, mainloop_timer, True)
+    timer.Timer(0.1, startup_animation, False)
 
     try:
         appd.motion = motion.Motion(motion_detected)
