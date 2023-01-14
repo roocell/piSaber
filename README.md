@@ -144,6 +144,7 @@ sudo pip3 install smbus<BR>
 
 
 # START AS SERVICE
+```
 sudo vi /etc/systemd/system/pisaber.service
 [Unit]
 Description=pisaber
@@ -162,3 +163,4 @@ sudo systemctl restart pisaber
 sudo systemctl status pisaber.service
 
 sudo systemctl disable pisaber
+```
