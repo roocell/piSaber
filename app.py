@@ -83,10 +83,16 @@ def external_button_is_pressed():
     return GPIO.input(appd.external_button) == False
         
 ############### MOTION ###########
-async def motion_detected():
-    log.debug("motion_detected")
+async def hit_detected():
+    log.debug("hit_detected")
     if appd.blade.get_state() == blade.BLADE_ON:
+        await appd.audio.play_hit()
         await appd.blade.animate(blade.BLADE_CRASH)
+
+async def swing_detected():
+    log.debug("swing_detected")
+    if appd.blade.get_state() == blade.BLADE_ON:
+        await appd.audio.play_swing()
 
 ######################## MAIN ##########################
 async def button_long_timer_callback(repeat, timeout):
@@ -117,7 +123,7 @@ async def button_short_timer_callback(repeat, timeout):
     except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
 async def startup_animation(repeat, timeout):
-        await appd.audio.play_startup()
+        #await appd.audio.play_startup()
         pixels[5] = white
         pixels.show()
         time.sleep(0.5)
@@ -180,7 +186,7 @@ if __name__ == '__main__':
     timer.Timer(0.1, startup_animation, False)
 
     try:
-        appd.motion = motion.Motion(motion_detected)
+        appd.motion = motion.Motion(swing_detected, hit_detected)
     except Exception as e:
         # if the motion box isn't connected (or broken) we'll get here
         log.error(">>>>Motion Module Error>>>> {} ".format(e))

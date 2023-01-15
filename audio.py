@@ -7,6 +7,7 @@ import pygame
 import alsaaudio
 import asyncio
 from logger import log as log
+import random
 
 sounds = {}
 sounds["on"] = "ON.wav"
@@ -16,6 +17,31 @@ path = "/home/pi/piSaber/sounds/"
 on = path + "ON.wav"
 off = path + "OFF.wav"
 there_is_no_try = path + "there-is-no-try.wav"
+
+short_swings = [
+     path + "SWS1.wav",
+     path + "SWS2.wav",
+     path + "SWS3.wav",
+     path + "SWS4.wav",
+     path + "SWS5.wav"
+]
+long_swings = [
+     path + "SWL1.wav",
+     path + "SWL2.wav",
+     path + "SWL3.wav",
+     path + "SWL4.wav"
+]
+
+hits = [
+     path + "SK1.wav",
+     path + "SK2.wav",
+     path + "SK3.wav",
+     path + "SK4.wav",
+     path + "SK5.wav",
+     path + "SK6.wav",
+     path + "SK7.wav",
+     path + "SK8.wav"
+]
 
 class Audio:
     def __init__(self):
@@ -34,6 +60,18 @@ class Audio:
         pygame.mixer.Sound(on).play()
     async def play_off(self):
         pygame.mixer.Sound(off).play()
+
+    async def play_hit(self):        
+        pygame.mixer.Sound(hits[random.randrange(0, len(hits))]).play()
+
+    async def play_longswing(self):        
+        pygame.mixer.Sound(short_swings[random.randrange(0, len(short_swings))]).play()
+
+    async def play_shortswing(self):        
+        pygame.mixer.Sound(short_swings[random.randrange(0, len(short_swings))]).play()
+    
+    async def play_swing(self):        
+        await self.play_shortswing()
 
     async def play_startup(self):
         pygame.mixer.Sound(there_is_no_try).play()
