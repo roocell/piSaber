@@ -54,7 +54,15 @@ class Audio:
         m = alsaaudio.Mixer('Headphone')
         m.setvolume(90) # range seems to be non-linear
 
-        pygame.mixer.init()
+        # increase buffer to avoid underruns
+        # but this also slows it down
+        pygame.mixer.init(buffer=2048)
+
+        # load sounds files at startup to make it 
+        # faster to play
+        self.short_swings = []
+        for s in short_swings:
+            self.short_swings.append(pygame.mixer.Sound(s))
 
     async def play_on(self):
         pygame.mixer.Sound(on).play()
@@ -68,7 +76,7 @@ class Audio:
         pygame.mixer.Sound(short_swings[random.randrange(0, len(short_swings))]).play()
 
     async def play_shortswing(self):        
-        pygame.mixer.Sound(short_swings[random.randrange(0, len(short_swings))]).play()
+        self.short_swings[random.randrange(0, len(short_swings))].play()
     
     async def play_swing(self):        
         await self.play_shortswing()

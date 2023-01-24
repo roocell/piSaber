@@ -31,13 +31,17 @@ class Motion:
 
         self.swing_change_cnt = 0
         self.hit_change_cnt = 0
-        self.swing_diff = 500
-        self.swing_cnt = 5
-        self.swing_debounce = 1.0
+        self.swing_diff = 2000
+        self.swing_cnt = 1
+        self.swing_debounce = 0.5 # read time isn't exactly mpu_time above. so tweaking this lower to come out to about 1sec
+        # we want to debounce swing sounds, but not debounce readings
+        # so we can detect a hit at the end.
+        self.swing_debounce_acc = 0.0
 
-        self.hit_diff = 10000
-        self.hit_cnt = 2
+        self.hit_diff = 15000
+        self.hit_cnt = 1
         self.hit_debounce = 1.0
+        self.hit_ignore_next = False
 
         self.swing_detected = swing_detected
         self.hit_detected = hit_detected
@@ -87,9 +91,10 @@ class Motion:
 
         # if readings change from one to the next by a certain amount
         # we can detect motion
-        if self.data.ax == sys.maxsize:
+        if self.data.ax == sys.maxsize or self.hit_ignore_next:
             # make sure we start with a valid reading
             self.cache_data()
+            self.hit_ignore_next = False
             timer.Timer(self.mpu_time, self.mpu_timer, True)
             return
 
@@ -98,15 +103,15 @@ class Motion:
         diff_ay = abs(abs(self.last_data.ay) - abs(self.data.ay))
         diff_az = abs(abs(self.last_data.az) - abs(self.data.az))
 
-        print = False
-        if print_every_sample: print = True
+        printv = False
+        if print_every_sample: printv = True
         if print_theshold_sample and (
             diff_ax > print_thresh or
             diff_ay > print_thresh or
             diff_az > print_thresh 
-        ): print = True
+        ): printv = True
 
-        if print:
+        if printv:
             log.debug("ax %6d\t ay %6d\t az %6d\t dx %6d\t dy %6d\t dz %6d\t",
                 self.data.az, self.data.ay, self.data.az, 
                 diff_ax, diff_ay, diff_az)
@@ -121,24 +126,35 @@ class Motion:
                 self.hit_change_cnt = 0
                 self.cache_data()
                 timer.Timer(self.hit_debounce, self.mpu_timer, True)
+                # and ignore the next reading
+                self.hit_ignore_next = True
                 return       
         else:
             self.hit_change_cnt = 0
 
-        # only look for swing if we haven't detected a hit. ?
-        if diff_az > self.swing_diff or \
-        diff_az > self.swing_diff or \
-        diff_az > self.swing_diff:
-            self.swing_change_cnt += 1
-            if self.swing_change_cnt >= self.swing_cnt:
-                await self.swing_detected()
-                self.swing_change_cnt = 0
-                self.cache_data()
-                # TODO: we still want to sample fast to detect a hit at the end of swing
-                timer.Timer(self.swing_debounce, self.mpu_timer, True)
-                return
-        else:
-            self.swing_change_cnt = 0
+        # only look for swing if we haven't detected a hit. ? (handled by hit debounce)
+        # if we're debouncing a swing wait until we reevaludate
+        self.swing_debounce_acc -= self.mpu_time
+        #print(self.swing_debounce_acc)
+        if self.swing_debounce_acc <= 0.0:
+            if diff_az > self.swing_diff or \
+            diff_az > self.swing_diff or \
+            diff_az > self.swing_diff:
+                self.swing_change_cnt += 1
+                log.debug("swing {}".format(self.swing_change_cnt))
+                if self.swing_change_cnt >= self.swing_cnt:
+                    await self.swing_detected()
+                    self.swing_change_cnt = 0
+                    self.cache_data()
+                    self.swing_debounce_acc = self.swing_debounce
+                    timer.Timer(self.mpu_time, self.mpu_timer, True)
+                    return
+            else:
+                if self.swing_change_cnt > 0:
+                    self.swing_change_cnt -= 1
+                else:
+                    self.swing_change_cnt = 0
+            self.swing_debounce_acc = 0.0
     
         self.cache_data()
         timer.Timer(self.mpu_time, self.mpu_timer, True)
