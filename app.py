@@ -101,9 +101,13 @@ async def button_long_timer_callback(repeat, timeout):
         if appd.blade.get_state() == blade.BLADE_OFF:
             await appd.audio.play_on()
             await appd.blade.animate(blade.BLADE_ON)
+            appd.motion.start()
+            await appd.audio.start_hum()
         else:
             await appd.audio.play_off()
             await appd.blade.animate(blade.BLADE_OFF)
+            appd.motion.stop()
+            await appd.audio.stop_hum()
     except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
 async def button_short_timer_callback(repeat, timeout):
@@ -123,7 +127,7 @@ async def button_short_timer_callback(repeat, timeout):
     except Exception as e: log.error(">>>>Error>>>> {} ".format(e))    
 
 async def startup_animation(repeat, timeout):
-        #await appd.audio.play_startup()
+        await appd.audio.play_startup()
         pixels[5] = white
         pixels.show()
         time.sleep(0.5)

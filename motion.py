@@ -9,7 +9,7 @@ import time
 # TODO: add a interrupt pin option
 
 print_every_sample = False # print every sample
-print_theshold_sample = True # print data past a threshold diff from one sample to the next
+print_theshold_sample = False # print data past a threshold diff from one sample to the next
 print_thresh = 500
 
 class motion_data:
@@ -25,14 +25,13 @@ class motion_data:
 class Motion:
     def __init__(self, swing_detected, hit_detected):
         self.mpu_time = 0.025 # 25 ms
-
         self.data = motion_data()
         self.last_data = motion_data()
 
         self.swing_change_cnt = 0
         self.hit_change_cnt = 0
-        self.swing_diff = 2000
-        self.swing_cnt = 1
+        self.swing_diff = 400
+        self.swing_cnt = 3
         self.swing_debounce = 0.5 # read time isn't exactly mpu_time above. so tweaking this lower to come out to about 1sec
         # we want to debounce swing sounds, but not debounce readings
         # so we can detect a hit at the end.
@@ -41,7 +40,7 @@ class Motion:
         self.hit_diff = 15000
         self.hit_cnt = 1
         self.hit_debounce = 1.0
-        self.hit_ignore_next = False
+        self.hit_ignore_next = True # ignore the very first
 
         self.swing_detected = swing_detected
         self.hit_detected = hit_detected
@@ -49,7 +48,15 @@ class Motion:
         self.IOError = False
 
         mpu.MPU_Init()
-        timer.Timer(self.mpu_time, self.mpu_timer, True)
+        self.timer = 0
+        #timer.Timer(self.mpu_time, self.mpu_timer_callback, True)
+
+    def start(self):
+        self.timer = timer.Timer(self.mpu_time, self.mpu_timer_callback, True)
+
+    def stop(self):
+        self.timer.cancel()
+
 
     def cache_data(self):
         self.last_data.ax = self.data.ax
@@ -59,7 +66,7 @@ class Motion:
         self.last_data.gy = self.data.gy
         self.last_data.gz = self.data.gz
 
-    async def mpu_timer(self, repeat, timeout):
+    async def mpu_timer_callback(self, repeat, timeout):
         try:
             # we had an IOError last time - try to fix it.
             if self.IOError:
@@ -86,7 +93,7 @@ class Motion:
             # we will reinitialize next time
             self.IOError = True
             self.data.__init__()
-            timer.Timer(self.mpu_time + 1, self.mpu_timer, True)
+            self.timer = timer.Timer(self.mpu_time + 1, self.mpu_timer_callback, True)
             return
 
         # if readings change from one to the next by a certain amount
@@ -95,13 +102,14 @@ class Motion:
             # make sure we start with a valid reading
             self.cache_data()
             self.hit_ignore_next = False
-            timer.Timer(self.mpu_time, self.mpu_timer, True)
+            self.timer = timer.Timer(self.mpu_time, self.mpu_timer_callback, True)
             return
 
         diff_ax = abs(abs(self.last_data.ax) - abs(self.data.ax))
         #log.debug("diff_ax {} self.last_data.ax {} acc_x {}", format(diff_ax,self.last_data.ax, acc_x))
         diff_ay = abs(abs(self.last_data.ay) - abs(self.data.ay))
         diff_az = abs(abs(self.last_data.az) - abs(self.data.az))
+        diff_gz = abs(abs(self.last_data.gz) - abs(self.data.gz))
 
         printv = False
         if print_every_sample: printv = True
@@ -112,9 +120,10 @@ class Motion:
         ): printv = True
 
         if printv:
-            log.debug("ax %6d\t ay %6d\t az %6d\t dx %6d\t dy %6d\t dz %6d\t",
-                self.data.az, self.data.ay, self.data.az, 
-                diff_ax, diff_ay, diff_az)
+            log.debug("ax %6d\t ay %6d\t az %6d\t dx %6d\t dy %6d\t dz %6d\t gx %6d\t gy %6d\t gz %6d\t",
+                self.data.ax, self.data.ay, self.data.az, 
+                diff_ax, diff_ay, diff_az,
+                self.data.gx, self.data.gy, self.data.gz      )
 
         if diff_ax > self.hit_diff or \
         diff_ay > self.hit_diff or \
@@ -125,7 +134,7 @@ class Motion:
                 await self.hit_detected()
                 self.hit_change_cnt = 0
                 self.cache_data()
-                timer.Timer(self.hit_debounce, self.mpu_timer, True)
+                self.timer = timer.Timer(self.hit_debounce, self.mpu_timer_callback, True)
                 # and ignore the next reading
                 self.hit_ignore_next = True
                 return       
@@ -137,9 +146,8 @@ class Motion:
         self.swing_debounce_acc -= self.mpu_time
         #print(self.swing_debounce_acc)
         if self.swing_debounce_acc <= 0.0:
-            if diff_az > self.swing_diff or \
-            diff_az > self.swing_diff or \
-            diff_az > self.swing_diff:
+            
+            if diff_gz > self.swing_diff:
                 self.swing_change_cnt += 1
                 log.debug("swing {}".format(self.swing_change_cnt))
                 if self.swing_change_cnt >= self.swing_cnt:
@@ -147,7 +155,7 @@ class Motion:
                     self.swing_change_cnt = 0
                     self.cache_data()
                     self.swing_debounce_acc = self.swing_debounce
-                    timer.Timer(self.mpu_time, self.mpu_timer, True)
+                    self.timer = timer.Timer(self.mpu_time, self.mpu_timer_callback, True)
                     return
             else:
                 if self.swing_change_cnt > 0:
@@ -157,4 +165,4 @@ class Motion:
             self.swing_debounce_acc = 0.0
     
         self.cache_data()
-        timer.Timer(self.mpu_time, self.mpu_timer, True)
+        self.timer = timer.Timer(self.mpu_time, self.mpu_timer_callback, True)

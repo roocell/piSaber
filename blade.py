@@ -185,7 +185,7 @@ class Blade:
                     self.pixels[prevp] = set_brightness(self.colour, 0.2)
                     self.pixels.show()
                     await asyncio.sleep(self.onoffdelay/self.num_pixels)
-        except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
+        except Exception as e: log.error(">>>>idle cancelled>>>> {} ".format(e))
 
     async def idle_breath(self):
         log.debug("blade breath")
@@ -204,7 +204,7 @@ class Blade:
                     self.pixels.show()
                     await asyncio.sleep(0.1)
         # this error spits out if the task is cancelled
-        except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
+        except Exception as e: log.error(">>>>idle cancelled>>>> {} ".format(e))
 
     async def idle_rainbow_cycle(self):
         try:
@@ -215,7 +215,7 @@ class Blade:
                         self.pixels[i] = wheel(pixel_index & 255)
                     self.pixels.show()
                     await asyncio.sleep(0.001)
-        except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
+        except Exception as e: log.error(">>>>idle cancelled>>>> {} ".format(e))
 
     async def idle_flame_old(self):
         try:

@@ -16,6 +16,7 @@ sounds["off"] = "OFF.wav"
 path = "/home/pi/piSaber/sounds/"
 on = path + "ON.wav"
 off = path + "OFF.wav"
+hum = path + "HUM.wav"
 there_is_no_try = path + "there-is-no-try.wav"
 
 short_swings = [
@@ -58,6 +59,10 @@ class Audio:
         # but this also slows it down
         pygame.mixer.init(buffer=2048)
 
+        pygame.mixer.music.load(hum)
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.pause()
+
         # load sounds files at startup to make it 
         # faster to play
         self.short_swings = []
@@ -82,7 +87,13 @@ class Audio:
         await self.play_shortswing()
 
     async def play_startup(self):
-        pygame.mixer.Sound(there_is_no_try).play()
+       pygame.mixer.Sound(there_is_no_try).play()
+
+    async def start_hum(self):
+       pygame.mixer.music.unpause()
+    async def stop_hum(self):
+       pygame.mixer.music.pause()
+
 
 if __name__ == '__main__':
     pygame.mixer.init()
