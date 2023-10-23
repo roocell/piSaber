@@ -18,6 +18,7 @@ on = path + "ON.wav"
 off = path + "OFF.wav"
 hum = path + "HUM.wav"
 there_is_no_try = path + "there-is-no-try.wav"
+darkside = path + "vader.wav"
 
 short_swings = [
      path + "SWS1.wav",
@@ -41,7 +42,8 @@ hits = [
      path + "SK5.wav",
      path + "SK6.wav",
      path + "SK7.wav",
-     path + "SK8.wav"
+     path + "SK8.wav",
+     path + "scream.wav"
 ]
 
 class Audio:
@@ -87,7 +89,8 @@ class Audio:
         await self.play_shortswing()
 
     async def play_startup(self):
-       pygame.mixer.Sound(there_is_no_try).play()
+       #pygame.mixer.Sound(there_is_no_try).play()
+       pygame.mixer.Sound(darkside).play()
 
     async def start_hum(self):
        pygame.mixer.music.unpause()

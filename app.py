@@ -196,7 +196,7 @@ if __name__ == '__main__':
         log.error(">>>>Motion Module Error>>>> {} ".format(e))
         #appd.audio.play_sound(audio.buzzer)
 
-    appd.blade = blade.Blade(pixels,blue)
+    appd.blade = blade.Blade(pixels,red)
     appd.audio = audio.Audio()
 
     # run the event loop

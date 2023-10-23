@@ -8,6 +8,7 @@ from logger import log as log
 import asyncio
 import time
 import random
+import traceback
 
 green =     (0,   255, 0)
 red =       (255, 0,   0)
@@ -58,17 +59,19 @@ def wheel(pos):
 # NeoFire
 # https://github.com/RoboUlbricht/arduinoslovakia/blob/master/neopixel/neopixel_fire01/neopixel_fire01.ino
 def constrain(val, min_val, max_val):
-    return min(max_val, max(min_val, val))
+    return max(val, min(val, max_val))
 
 def NeoFire_Draw(pixels):
+    fire_color = ( 80,  35,  00)
+    #fire_color = ( 255,  128,  00)
     pixels.fill((0,0,0))
     for i in range(len(pixels)):
-        fire_color = ( 80,  35,  00)
         NeoFire_AddColor(pixels, i, fire_color)
-        r = randoma(80);
-        diff_color = pixels.fill( r, r/2, r/2)
-        NeoFire_SubstractColor(i, diff_color)
-        pixels.show()
+        r = random.randint(1, 80);
+        diff_color = (int(r), int(r/2), int(r/2))
+        NeoFire_SubstractColor(pixels, i, diff_color)
+        #log.debug(f"pix {i} is {pixels[i]}")
+    pixels.show()
 
 def NeoFire_AddColor(pixels, position, color):
     blended_color = NeoFire_Blend(pixels[position], color)
@@ -79,32 +82,42 @@ def NeoFire_SubstractColor(pixels, position, color):
     pixels[position] = blended_color
 
 def NeoFire_Substract(color1, color2):
-    r1 = (color1[0] >> 16)
-    g1 = (color1[1] >>  8)
-    b1 = (color1[2] >>  0)
+    try:
+        r1 = color1[0]
+        g1 = color1[1]
+        b1 = color1[2]
 
-    r2 = (color2[0] >> 16)
-    g2 = (color2[1] >>  8)
-    b2 = (color2[2] >>  0)
+        r2 = color2[0]
+        g2 = color2[1]
+        b2 = color2[2]
 
-    r = r1 - r2
-    g = g1 - g2
-    b = b1 - b2
-    if r < 0: r = 0
-    if g < 0: g = 0
-    if b < 0: b = 0
-
+        r = r1 - r2
+        g = g1 - g2
+        b = b1 - b2
+        if r < 0: r = 0
+        if g < 0: g = 0
+        if b < 0: b = 0
+    except Exception as e: 
+        line_number = traceback.extract_tb(e.__traceback__)[0][1]
+        log.error(f">>>>Error:{line_number} >>>> {e} ".format(e))
+    #log.debug(f"S {r} {g} {b}")
     return (r, g, b)
 
 def NeoFire_Blend(color1, color2):
-    r1 = (color1[0] >> 16)
-    g1 = (color1[1] >>  8)
-    b1 = (color1[2] >>  0)
+    try:
+        r1 = color1[0]
+        g1 = color1[1]
+        b1 = color1[2]
 
-    r2 = (color2[0] >> 16)
-    g2 = (color2[1] >>  8)
-    b2 = (color2[2] >>  0)
-    return (constrain(r1+r2, 0, 255), constrain(g1+g2, 0, 255), constrain(b1+b2, 0, 255))
+        r2 = color2[0]
+        g2 = color2[1]
+        b2 = color2[2]
+    except Exception as e: 
+        line_number = traceback.extract_tb(e.__traceback__)[0][1]
+        log.error(f">>>>Error:{line_number} >>>> {e} ".format(e))
+    c = (constrain(r1+r2, 0, 255), constrain(g1+g2, 0, 255), constrain(b1+b2, 0, 255))
+    #log.debug(f"B {r1}+{r2}={c[0]} {g1}+{g2}={c[1]} {b1}+{b2}={c[2]}")
+    return c
 
 class Blade:
     def __init__(self, pixels, colour):
@@ -120,6 +133,7 @@ class Blade:
             self.idle_pulse,
             self.idle_breath,
             self.idle_rainbow_cycle,
+            self.idle_flame,
         ]
         self.idlefunc_idx = 0
 
@@ -179,13 +193,14 @@ class Blade:
             # of them to create an illusion that it's alive
             while True:
                 for i in range(self.num_pixels):
-                    self.pixels[i] = set_brightness(blue, 0.8)
+                    self.pixels[i] = set_brightness(self.colour, 0.8)
                     if i > 0: prevp = i-1
                     else:     prevp = self.num_pixels-1
                     self.pixels[prevp] = set_brightness(self.colour, 0.2)
                     self.pixels.show()
                     await asyncio.sleep(self.onoffdelay/self.num_pixels)
-        except Exception as e: log.error(">>>>idle cancelled>>>> {} ".format(e))
+        except Exception as e: 
+            log.error(">>>>idle cancelled>>>> {} ".format(e))
 
     async def idle_breath(self):
         log.debug("blade breath")
@@ -239,8 +254,13 @@ class Blade:
 
     async def idle_flame(self):
         try:
-            await NeoFire_Draw(self.pixels)
-        except Exception as e: log.error(">>>>Error>>>> {} ".format(e))
+            while True:
+                NeoFire_Draw(self.pixels)
+                t = random.randint(25, 75); # rand between 50 and 150 ms
+                await asyncio.sleep(t/1000)
+        except Exception as e: 
+            line_number = traceback.extract_tb(e.__traceback__)[0][1]
+            log.error(f">>>>Error:{line_number} >>>> {e} ".format(e))
 
     async def idle_cyclefunc(self):
         try:
