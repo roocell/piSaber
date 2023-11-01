@@ -3,11 +3,6 @@
 ## A Raspberry Pi controlled lightsaber using neopixels
 
 [![demo1](https://img.youtube.com/vi/3u1CNfoO4zo/0.jpg)](https://www.youtube.com/shorts/3u1CNfoO4zo)
-[![demo2](https://img.youtube.com/vi/WJEqB1KE0rI/0.jpg)](https://www.youtube.com/shorts/WJEqB1KE0rI)
-[![demo3](https://img.youtube.com/vi/bdTgkJ8iOiE/0.jpg)](https://www.youtube.com/shorts/bdTgkJ8iOiE)
-
-![1](/1,jpg)
-
 
 # Resources
 https://fredrik.hubbe.net/lightsaber/v4/<BR>
@@ -171,3 +166,12 @@ sudo systemctl status pisaber.service
 
 sudo systemctl disable pisaber
 ```
+[![demo2](https://img.youtube.com/vi/WJEqB1KE0rI/0.jpg)](https://www.youtube.com/shorts/WJEqB1KE0rI)
+[![demo3](https://img.youtube.com/vi/bdTgkJ8iOiE/0.jpg)](https://www.youtube.com/shorts/bdTgkJ8iOiE)
+![1](/1.jpg)
+![1](/2.jpg)
+![1](/3.jpg)
+![1](/4.jpg)
+![1](/5.jpg)
+![1](/6.jpg)
+![1](/7.jpg)
